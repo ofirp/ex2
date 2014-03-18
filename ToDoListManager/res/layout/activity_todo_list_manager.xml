@@ -8,15 +8,9 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".TodoListManagerActivity"
     android:orientation="vertical" >
-<EditText android:id="@+id/edtNewItem"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="@string/inputHint"
-    />
 <ListView android:id="@+id/listTodoItems"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" 
     android:background="@android:drawable/editbox_background"
     />
-
 </LinearLayout>

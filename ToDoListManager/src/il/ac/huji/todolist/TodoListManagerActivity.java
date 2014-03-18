@@ -1,9 +1,12 @@
 package il.ac.huji.todolist;
 
 import java.util.ArrayList;
+import java.util.Date;
+
 
 import android.app.Activity;
-import android.app.LauncherActivity.ListItem;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -12,25 +15,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ListView;
 
 public class TodoListManagerActivity extends Activity {
 
 	
 	
-	private ArrayList<String> memosList;
+	private ArrayList<listItem> memosList;
 	private ListView list;
-	private ColoredArrayAdapter adapter;
+	private MyArrayAdapter adapter;
+	final int RETURN_CODE=13;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_todo_list_manager);
-		memosList=new ArrayList<String>();
+		memosList=new ArrayList<listItem>();
 		list=(ListView) findViewById(R.id.listTodoItems);
-		adapter=new ColoredArrayAdapter(this,android.R.layout.simple_list_item_1 ,memosList);
+		adapter=new MyArrayAdapter(this,memosList);
 		list.setAdapter(adapter);
 		registerForContextMenu(list);
 	}
@@ -53,14 +56,31 @@ public class TodoListManagerActivity extends Activity {
 		return true;
 	}
 	
+	
 	public void addClick(){
-		EditText memoView = (EditText) findViewById(R.id.edtNewItem);
-		String memo = memoView.getText().toString();
-		memo=memo.trim();
-		if(!memo.equals(""))
-			memosList.add(memo);
-		memoView.setText("");
-		adapter.notifyDataSetChanged();
+		//opens a new activity
+		
+		Intent intent = new Intent(getApplicationContext(),AddNewTodoItemActivity.class);
+		startActivityForResult(intent, RETURN_CODE);
+	}
+	
+	protected void onActivityResult(int requestCode,int resultCode, Intent data){
+		
+		if (requestCode==RETURN_CODE){
+			
+			if(resultCode==RESULT_OK){
+				String title = data.getStringExtra("title");
+				Date date = (Date) data.getExtras().get("dueDate");
+				memosList.add(new listItem(title,date));
+				adapter.notifyDataSetChanged();
+			}
+			else if(resultCode==RESULT_CANCELED){
+				return;
+			}
+			
+		}
+		
+		
 	}
 	
 	public void onCreateContextMenu(ContextMenu menu,View v, ContextMenuInfo menuInfo){
@@ -68,19 +88,32 @@ public class TodoListManagerActivity extends Activity {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		MenuInflater m =getMenuInflater();
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        menu.setHeaderTitle(memosList.get(info.position));
+        String title = memosList.get(info.position).getTitle();
+		menu.setHeaderTitle(title);
         m.inflate(R.menu.context_menu, menu);
+        MenuItem call = menu.findItem(R.id.menuItemCall);
+        
+        if(title.startsWith("Call ") || title.startsWith("call ")){
+        	call.setTitle(memosList.get(info.position).getTitle());
+        	call.setVisible(true);
+        }
 				
 	}
 	
-	public boolean onContextItemSelected(MenuItem item){	
+	public boolean onContextItemSelected(MenuItem item){
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		int pos = (int) info.id;
 		switch (item.getItemId()){
 			case R.id.menuItemDelete:
-				AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-				int pos = (int) info.id;
 				memosList.remove(pos);
 				adapter.notifyDataSetChanged();
 				return true;
+			case R.id.menuItemCall:
+				String number=memosList.get(pos).title.split("\\s+")[1];
+				Intent intent = new Intent(Intent.ACTION_DIAL);
+				intent.setData(Uri.parse("tel:"+number));
+				startActivity(intent);
+				
 			default:
 				return super.onContextItemSelected(item);
 		}

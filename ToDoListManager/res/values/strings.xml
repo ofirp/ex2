@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ToDo ListApp v1</string>
+    <string name="app_name">ToDo ListApp</string>
     <string name="action_settings">Settings</string>
     <string name="inputHint">what do you want to do?</string>
     <string name="Add">Add</string>
-    <string name="delete">Delete Item</string>   
-
+    <string name="delete">Delete Item</string>
+    <string name="title_activity_add_new_todo_item">AddNewTodoItemActivity</string>
+	<color name="white">#FFFFFF</color>
 </resources>
