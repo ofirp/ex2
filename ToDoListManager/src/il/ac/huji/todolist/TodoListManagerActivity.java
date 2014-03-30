@@ -24,9 +24,6 @@ import com.parse.SaveCallback;
 
 public class TodoListManagerActivity extends Activity {
 
-	
-	private static final String APP_ID = "dfCIMhlRWGZ4PG33PUGzyFrXuH8uhb5oBbJqvrGJ";
-	private static final String CLIENT_KEY = "jiUuWHVuwzsdg4tBU8FrPaX1oW509cON1j3RvMKf"; 
 	private ListView list;
 	private MyCursorAdapter adapter;
 	private DataBaseHandler handler;
@@ -35,7 +32,6 @@ public class TodoListManagerActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Parse.initialize(getApplicationContext(), APP_ID, CLIENT_KEY);
 		setContentView(R.layout.activity_todo_list_manager);
 		handler = new DataBaseHandler(getApplicationContext());
 		Cursor cursor = getDBCursor();
