@@ -55,12 +55,13 @@ public class AddNewTodoItemActivity extends Activity {
 					cal.set(Calendar.YEAR,year);
 					cal.set(Calendar.MONTH,month);
 					cal.set(Calendar.DAY_OF_MONTH,day);
-
+					long dueLong = cal.getTimeInMillis();
 					Date date = cal.getTime();
 
 					Intent returnIntent = new Intent();
 					returnIntent.putExtra("dueDate",date);
 					returnIntent.putExtra("title",editText.getText().toString());
+					returnIntent.putExtra("dueLong",dueLong);
 					setResult(RESULT_OK,returnIntent);
 					finish();
 				}else{
