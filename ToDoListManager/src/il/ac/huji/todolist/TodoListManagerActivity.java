@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -34,16 +35,69 @@ public class TodoListManagerActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_todo_list_manager);
 		handler = new DataBaseHandler(getApplicationContext());
-		Cursor cursor = getDBCursor();
-		handler.setIdCount(cursor.getCount());
 		list=(ListView) findViewById(R.id.listTodoItems);
-		adapter = new MyCursorAdapter(this, cursor);
-		list.setAdapter(adapter);
+		LoadTask loadTask = new LoadTask();
+		loadTask.execute();
 		registerForContextMenu(list);
 		
 	}
+	
+	
+	
+	private class LoadTask extends AsyncTask<Void, Void, Cursor>{
 
+		@Override
+		protected Cursor doInBackground(Void... params) {
+			SQLiteDatabase db = handler.getReadableDatabase();
+			String sqlStr="SELECT * FROM "+DataBaseHandler.DB_NAME;
+			Cursor cursor=db.rawQuery(sqlStr,null);
+			return cursor;
+		}
+		
+		protected void onPostExecute(Cursor cursor){
+			handler.setIdCount(cursor.getCount());
+			adapter = new MyCursorAdapter(getApplicationContext(), cursor);
+			list.setAdapter(adapter);
+		}
+	}
+	
+	
+	private class AddTask extends AsyncTask<Intent, Void, Cursor>{
 
+		@Override
+		protected Cursor doInBackground(Intent... data) {
+			String title = data[0].getStringExtra("title");
+			long dueLong = data[0].getLongExtra("dueLong",0);
+			handler.addRecord(title, dueLong);
+			SQLiteDatabase db = handler.getReadableDatabase();
+			String sqlStr="SELECT * FROM "+DataBaseHandler.DB_NAME;
+			Cursor cursor=db.rawQuery(sqlStr,null);
+			return cursor;
+		}
+		
+		protected void onPostExecute(Cursor cursor){
+			adapter.changeCursor(cursor);
+		}	
+	}
+	
+	private class DeleteTask extends AsyncTask<Integer, Void, Cursor>{
+
+		@Override
+		protected Cursor doInBackground(Integer...pos) {
+			handler.deleteRecord(pos[0]);
+			SQLiteDatabase db = handler.getReadableDatabase();
+			String sqlStr="SELECT * FROM "+DataBaseHandler.DB_NAME;
+			Cursor cursor=db.rawQuery(sqlStr,null);
+			return cursor;
+		}
+		
+		protected void onPostExecute(Cursor cursor){
+			adapter.changeCursor(cursor);
+		}	
+	}
+	
+	
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -75,12 +129,8 @@ public class TodoListManagerActivity extends Activity {
 		if (requestCode==RETURN_CODE){
 			
 			if(resultCode==RESULT_OK){
-				String title = data.getStringExtra("title");
-				long dueLong = data.getLongExtra("dueLong",0);
-				handler.addRecord(title, dueLong);
-				Cursor cursor = getDBCursor();
-				adapter.changeCursor(cursor);
-				handler.printDB();
+				AddTask addTask = new AddTask();
+				addTask.execute(new Intent[]{data});
 			}
 			else if(resultCode==RESULT_CANCELED){
 				return;
@@ -118,9 +168,8 @@ public class TodoListManagerActivity extends Activity {
 		int pos = (int) info.id;
 		switch (item.getItemId()){
 			case R.id.menuItemDelete:
-				handler.deleteRecord(pos);
-				Cursor cursor = getDBCursor();
-				adapter.changeCursor(cursor);
+				DeleteTask deleteTask=new DeleteTask();
+				deleteTask.execute(new Integer[]{pos});
 				return true;
 			case R.id.menuItemCall:
 				SQLiteDatabase db = handler.getReadableDatabase();
@@ -139,12 +188,5 @@ public class TodoListManagerActivity extends Activity {
 			default:
 				return super.onContextItemSelected(item);
 		}
-	}
-	
-	public Cursor getDBCursor(){
-		SQLiteDatabase db = handler.getReadableDatabase();
-		String sqlStr="SELECT * FROM "+DataBaseHandler.DB_NAME;
-		Cursor cursor=db.rawQuery(sqlStr,null);
-		return cursor;
 	}
 }

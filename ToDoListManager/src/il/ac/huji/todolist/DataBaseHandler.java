@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -60,17 +59,18 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
 		db.insert(DB_NAME, null, values);
 		db.close();
+		/*
 		ParseObject obj = new ParseObject(CLASS_NAME);
 		obj.put(TITLE_COL, title);
 		obj.put(DUE_COL, due);
-		obj.saveInBackground();
+		obj.saveInBackground();*/
 		idCount++;
 		
 	}
 
 	public void deleteRecord(int id){
 		SQLiteDatabase db = this.getWritableDatabase();
-		
+		/*
 		//get title
 		String sql = "SELECT "+ DataBaseHandler.KEY_TITLE +" FROM "+DataBaseHandler.DB_NAME +" WHERE _id="+(id);
 		Cursor cursor = db.rawQuery(sql,null);
@@ -95,7 +95,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 		        	Log.i("error in delete","no object was found (delete)");
 		        }
 		    }
-		});
+		});*/
 		
 		//deleting from sqlite
 		db.delete(DB_NAME, KEY_ID + "=?", new String[] { Integer.toString(id) });
